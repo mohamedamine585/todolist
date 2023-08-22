@@ -159,6 +159,8 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                                   title: title.text,
                                   description: description.text,
                                   email: authservice.user!.email);
+
+                              Navigator.of(context).pop(true);
                             },
                             child: const Text(
                               "Save",
@@ -178,7 +180,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                                 backgroundColor: MaterialStateProperty.all(
                                     Color.fromARGB(218, 182, 228, 240))),
                             onPressed: () {
-                              Navigator.of(context).pop();
+                              Navigator.of(context).pop(false);
                             },
                             child: const Text(
                               "Cancel",

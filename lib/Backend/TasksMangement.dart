@@ -39,6 +39,7 @@ class Taskmangementservice {
           await taskscollection.where("user", isEqualTo: email).get();
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
         dynamic docdata = doc.data();
+
         if (docdata != null) {
           tasks.add(Task(
               title: docdata["title"],
@@ -46,8 +47,9 @@ class Taskmangementservice {
               completed: docdata["completed"] ?? false,
               date: (docdata["date"] as Timestamp).toDate()));
         }
-        return tasks;
       }
+      tasks.sort((a, b) => b.date.compareTo(a.date));
+      return tasks;
     } catch (e) {
       print(e);
     }

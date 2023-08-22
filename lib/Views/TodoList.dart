@@ -24,6 +24,7 @@ class _TodoListPageState extends State<TodoListPage> {
   final tasksmangementservice = Taskmangementservice();
   final authservice = Authservice();
   List<Task> data = [];
+  bool should_reload = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,12 +34,14 @@ class _TodoListPageState extends State<TodoListPage> {
           Container(
             width: screenwidth * 0.1,
             child: IconButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  should_reload = await Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => Createupdatetasks()));
-                  setState(() {});
+                  if (should_reload) {
+                    setState(() {});
+                  }
                 },
                 icon: const Icon(Icons.add)),
           ),
@@ -47,8 +50,8 @@ class _TodoListPageState extends State<TodoListPage> {
             child: IconButton(
                 onPressed: () async {
                   await authservice.signout();
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil("signinpage", (route) => false);
+                  Navigator.of(context).pushNamedAndRemoveUntil<bool>(
+                      "signinpage", (route) => false);
                 },
                 icon: const Icon(Icons.logout)),
           ),
@@ -87,6 +90,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   onChanged: (query) {
                     setState(() {
                       filter.text = query;
+                      should_reload = true;
                     });
                   },
                   style: const TextStyle(fontSize: 20),
@@ -106,14 +110,18 @@ class _TodoListPageState extends State<TodoListPage> {
             Container(
               height: screenlength * 0.63,
               child: FutureBuilder(
-                  future: tasksmangementservice.get_tasks(
-                      email: Authservice().user!.email),
+                  future: (should_reload)
+                      ? tasksmangementservice.get_tasks(
+                          email: authservice.user!.email)
+                      : null,
                   builder: (context, snapshot) {
-                    data = snapshot.data
-                            ?.where((element) =>
-                                element.title.contains(filter.text))
-                            .toList() ??
-                        [];
+                    (should_reload)
+                        ? data = (snapshot.data
+                                ?.where((element) =>
+                                    element.title.contains(filter.text))
+                                .toList() ??
+                            [])
+                        : data;
 
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
@@ -121,8 +129,10 @@ class _TodoListPageState extends State<TodoListPage> {
                             color: Color.fromARGB(255, 130, 190, 239)),
                       );
                     }
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      if (!snapshot.hasData || snapshot.data == []) {
+                    if (snapshot.connectionState == ConnectionState.done ||
+                        !should_reload) {
+                      if ((!snapshot.hasData || snapshot.data == []) &&
+                          should_reload) {
                         return const Column(
                           children: [
                             Text(
@@ -134,7 +144,9 @@ class _TodoListPageState extends State<TodoListPage> {
                       }
                       return RefreshIndicator(
                           onRefresh: () async {
-                            setState(() {});
+                            setState(() {
+                              should_reload = true;
+                            });
                           },
                           child: ListView.builder(
                             itemCount: data.length,
@@ -224,6 +236,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                                   setState(() {
                                                     data[index].completed =
                                                         onchanged;
+                                                    should_reload = false;
                                                   });
                                                 },
                                                 value: data[index].completed),
