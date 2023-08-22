@@ -23,7 +23,7 @@ class Authservice {
     } catch (e) {}
   }
 
-  Future<void> signup({required String email, required String password}) async {
+  Future<bool> signup({required String email, required String password}) async {
     try {
       String? hash = hash_password(password: password);
       if (hash != null) {
@@ -31,7 +31,7 @@ class Authservice {
             await userscollection.where("email", isEqualTo: email).get();
 
         if (querySnapshot.docs.isNotEmpty) {
-          throw Exception("user already exists");
+          return false;
         }
         await FirebaseFirestore.instance
             .collection("users")
@@ -44,6 +44,7 @@ class Authservice {
     } catch (e) {
       user = null;
     }
+    return true;
   }
 
   Future<void> signout() async {

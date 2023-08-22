@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/Backend/Authservice.dart';
+import 'package:to_do_app/Views/Alertdialog.dart';
 
 import '../consts.dart';
 
@@ -30,6 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  final authservice = Authservice();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,8 +160,33 @@ class _RegisterPageState extends State<RegisterPage> {
                               Color.fromARGB(218, 94, 227, 250))),
                       onPressed: () async {
                         if (password.text == cnfpassword.text) {
-                          await Authservice().signup(
+                          final what_happend = await authservice.signup(
                               email: email.text, password: password.text);
+                          if (authservice.user == null) {
+                            if (what_happend == false) {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => show_alert(
+                                      context: context,
+                                      message:
+                                          "User already exists with those Credentials"));
+                            } else {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => show_alert(
+                                      context: context,
+                                      message: "Sign up failed"));
+                            }
+                          } else {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                "todolistpage", (route) => false);
+                          }
+                        } else {
+                          showDialog(
+                              context: context,
+                              builder: (context) => show_alert(
+                                  context: context,
+                                  message: "Passwords doesn't match"));
                         }
                       },
                       child: const Text(
