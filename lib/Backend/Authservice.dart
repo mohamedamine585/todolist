@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypt/crypt.dart';
 import 'package:to_do_app/Backend/Sharedpref.dart';
 
 import 'User.dart';
@@ -24,21 +25,23 @@ class Authservice {
 
   Future<void> signup({required String email, required String password}) async {
     try {
-      QuerySnapshot querySnapshot = await userscollection
-          .where("email", isEqualTo: email)
-          .where("password", isEqualTo: password)
-          .get();
+      String? hash = hash_password(password: password);
+      if (hash != null) {
+        QuerySnapshot querySnapshot =
+            await userscollection.where("email", isEqualTo: email).get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        throw Exception("user already exists");
+        if (querySnapshot.docs.isNotEmpty) {
+          throw Exception("user already exists");
+        }
+        await FirebaseFirestore.instance
+            .collection("users")
+            .add({"email": email, "password": hash});
+        user = User(email: email);
+        Sharedprefs().ConfirmuserAction("email", email);
+      } else {
+        user = null;
       }
-      await FirebaseFirestore.instance
-          .collection("users")
-          .add({"email": email, "password": password});
-      user = User(email: email);
-      Sharedprefs().ConfirmuserAction("email", email);
     } catch (e) {
-      print(e);
       user = null;
     }
   }
@@ -62,18 +65,32 @@ class Authservice {
 
   Future<void> signin({required String email, required String password}) async {
     try {
-      QuerySnapshot querySnapshot = await userscollection
-          .where("email", isEqualTo: email)
-          .where("password", isEqualTo: password)
-          .get();
+      String? hash = hash_password(password: password);
+      if (hash != null) {
+        QuerySnapshot querySnapshot = await userscollection
+            .where("email", isEqualTo: email)
+            .where("password", isEqualTo: hash)
+            .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        user = User(email: email);
-        Sharedprefs().ConfirmuserAction("email", email);
+        if (querySnapshot.docs.isNotEmpty) {
+          user = User(email: email);
+          Sharedprefs().ConfirmuserAction("email", email);
+        }
+      } else {
+        user = null;
       }
     } catch (e) {
       print(e);
       user = null;
     }
+  }
+
+  String? hash_password({required String password}) {
+    try {
+      return Crypt.sha256(password, rounds: 7000, salt: "have it hashed").hash;
+    } catch (e) {
+      print(e);
+    }
+    return null;
   }
 }
