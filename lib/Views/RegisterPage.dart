@@ -38,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             children: [
               SizedBox(
-                height: screenlength / 6,
+                height: screenlength * 0.1,
               ),
               const Text(
                 "Sign up",
@@ -163,7 +163,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         }
                       },
                       child: const Text(
-                        "Get Saved",
+                        "Sign up",
                         style: TextStyle(fontSize: 18, color: Colors.black),
                       ))),
               const SizedBox(

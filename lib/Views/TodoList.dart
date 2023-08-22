@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/Backend/Authservice.dart';
+import 'package:to_do_app/Backend/Task.dart';
 import 'package:to_do_app/Backend/TasksMangement.dart';
+import 'package:to_do_app/Views/CreateOrUpdateTask.dart';
 
 import '../consts.dart';
 
@@ -19,20 +21,47 @@ class _TodoListPageState extends State<TodoListPage> {
     super.initState();
   }
 
+  final tasksmangementservice = Taskmangementservice();
+  final authservice = Authservice();
+  List<Task> data = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        actions: [
+          Container(
+            width: screenwidth * 0.1,
+            child: IconButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Createupdatetasks()));
+                  setState(() {});
+                },
+                icon: const Icon(Icons.add)),
+          ),
+          Container(
+            width: screenwidth * 0.1,
+            child: IconButton(
+                onPressed: () async {
+                  await authservice.signout();
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil("signinpage", (route) => false);
+                },
+                icon: const Icon(Icons.logout)),
+          ),
+        ],
         iconTheme: IconThemeData(color: Colors.black),
         elevation: 0,
         title: Row(
           children: [
-            const SizedBox(
-              width: 90,
+            SizedBox(
+              width: screenwidth * 0.35,
             ),
             const Text(
-              "To do List",
+              "Tasks",
               style: const TextStyle(
                   color: Colors.black,
                   fontSize: 25,
@@ -71,52 +100,21 @@ class _TodoListPageState extends State<TodoListPage> {
             SizedBox(
               height: screenlength * 0.05,
             ),
-            Container(
-                width: screenwidth * 0.5,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushNamed("createupdatepage", arguments: null);
-                        },
-                        child: const Text("Add",
-                            style: TextStyle(color: Colors.white)),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStatePropertyAll(
-                              Color.fromARGB(255, 91, 187, 199)),
-                        )),
-                    SizedBox(
-                      width: screenwidth * 0.1,
-                    ),
-                    TextButton(
-                        onPressed: () async {
-                          await Taskmangementservice().delete_all_tasks(
-                              email: Authservice().user!.email);
-                        },
-                        child: const Text(
-                          "delete all",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStatePropertyAll(
-                              Color.fromARGB(255, 91, 187, 199)),
-                        ))
-                  ],
-                )),
-            SizedBox(
-              height: screenlength * 0.05,
-            ),
             Divider(
               thickness: 1,
             ),
             Container(
               height: screenlength * 0.63,
               child: FutureBuilder(
-                  future: Taskmangementservice()
-                      .get_tasks(email: Authservice().user!.email),
+                  future: tasksmangementservice.get_tasks(
+                      email: Authservice().user!.email),
                   builder: (context, snapshot) {
+                    data = snapshot.data
+                            ?.where((element) =>
+                                element.title.contains(filter.text))
+                            .toList() ??
+                        [];
+
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(
@@ -139,104 +137,99 @@ class _TodoListPageState extends State<TodoListPage> {
                             setState(() {});
                           },
                           child: ListView.builder(
-                            itemCount: snapshot.data?.length,
+                            itemCount: data.length,
                             itemBuilder: (context, index) {
-                              final data = snapshot.data;
                               return Container(
                                 width: screenwidth * 0.95,
-                                height: 120,
-                                child: Card(
-                                  shadowColor: Colors.blue,
-                                  elevation: 4,
-                                  child: SingleChildScrollView(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Container(
-                                          width: screenwidth * 0.6,
-                                          child: Column(
-                                            children: [
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                      child: Text(
-                                                          "Contact name :")),
-                                                  Text(
-                                                    data
-                                                            ?.elementAt(index)
-                                                            .title ??
-                                                        "",
+                                height: screenlength * 0.3,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                Createupdatetasks(
+                                                  title_text: data
+                                                      .elementAt(index)
+                                                      .title,
+                                                  description_text: data
+                                                      .elementAt(index)
+                                                      .description,
+                                                )));
+                                  },
+                                  child: Card(
+                                    shadowColor: Colors.blue,
+                                    elevation: 4,
+                                    child: SingleChildScrollView(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            width: screenwidth * 0.6,
+                                            child: Column(
+                                              children: [
+                                                const SizedBox(
+                                                  height: 5,
+                                                ),
+                                                Container(
+                                                  width: screenwidth * 0.3,
+                                                  child: Text(
+                                                    data.elementAt(index).title,
                                                     style: const TextStyle(
+                                                        fontSize: 20,
                                                         fontWeight:
                                                             FontWeight.bold),
-                                                  )
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Text("Contact log :"),
-                                                  Text(
+                                                    softWrap: true,
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: screenlength * 0.05,
+                                                ),
+                                                Container(
+                                                  width: screenwidth * 0.3,
+                                                  child: Text(
                                                     data
-                                                            ?.elementAt(index)
-                                                            .description ??
-                                                        "",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Text("Total call duration :")
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Text("Last call :"),
-                                                ],
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Text("From device :"),
-                                                  Text(
+                                                        .elementAt(index)
+                                                        .description,
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: screenlength * 0.05,
+                                                ),
+                                                Container(
+                                                  width: screenwidth * 0.3,
+                                                  child: Text(
                                                     data
-                                                            ?.elementAt(index)
-                                                            ?.timestamp
-                                                            .toString() ??
-                                                        "",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )
-                                                ],
-                                              )
-                                            ],
+                                                        .elementAt(index)
+                                                        .date
+                                                        .toString(),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        Container(
-                                          width: screenwidth * 0.33,
-                                          child: Container(
-                                            width: screenwidth * 0.1,
+                                          Container(
+                                            width: screenwidth * 0.33,
                                             child: Checkbox(
-                                                onChanged: (onchanged) {},
-                                                value: false),
+                                                onChanged: (onchanged) async {
+                                                  await tasksmangementservice
+                                                      .finish_unfinish_task(
+                                                          email: authservice
+                                                              .user!.email,
+                                                          date: data
+                                                              .elementAt(index)
+                                                              .date,
+                                                          status: onchanged!);
+                                                  setState(() {
+                                                    data[index].completed =
+                                                        onchanged;
+                                                  });
+                                                },
+                                                value: data[index].completed),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

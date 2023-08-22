@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/Backend/Authservice.dart';
+import 'package:to_do_app/Views/Alertdialog.dart';
 
 import '../consts.dart';
 
@@ -124,6 +125,11 @@ class _SigninPageState extends State<SigninPage> {
                         if (Authservice().user != null) {
                           Navigator.of(context).pushNamedAndRemoveUntil(
                               "todolistpage", (route) => false);
+                        } else {
+                          showDialog(
+                              context: context,
+                              builder: (context) => show_alert(
+                                  context: context, message: "message"));
                         }
                       },
                       child: const Text(

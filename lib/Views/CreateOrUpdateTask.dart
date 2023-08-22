@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:to_do_app/Backend/Authservice.dart';
+import 'package:to_do_app/Backend/TasksMangement.dart';
 
 import '../consts.dart';
 
 class Createupdatetasks extends StatefulWidget {
-  const Createupdatetasks({super.key});
+  String? title_text, description_text;
+  Createupdatetasks({super.key, this.description_text, this.title_text});
 
   @override
   State<Createupdatetasks> createState() => _CreateupdatetasksState();
@@ -12,6 +15,7 @@ class Createupdatetasks extends StatefulWidget {
 class _CreateupdatetasksState extends State<Createupdatetasks> {
   late final TextEditingController title;
   late final TextEditingController description;
+
   @override
   void initState() {
     title = TextEditingController();
@@ -27,6 +31,14 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
   }
 
   Widget build(BuildContext context) {
+    final taskmangementservice = Taskmangementservice();
+    final authservice = Authservice();
+    final title_txt = widget.title_text,
+        description_text = widget.description_text;
+    if (title_txt != null && description_text != null) {
+      title.text = title_txt;
+      description.text = description_text;
+    }
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.black),
@@ -36,8 +48,10 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
             const SizedBox(
               width: 90,
             ),
-            const Text(
-              "To do List",
+            Text(
+              (title_txt == null && description_text == null)
+                  ? "Add Task"
+                  : "Update Task",
               style: const TextStyle(
                   color: Colors.black,
                   fontSize: 25,
@@ -78,6 +92,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                     border: Border.all(),
                     borderRadius: BorderRadius.all(Radius.circular(10))),
                 child: TextField(
+                  maxLines: null,
                   controller: title,
                   style: const TextStyle(
                     fontSize: 20,
@@ -114,54 +129,64 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                     borderRadius: BorderRadius.all(Radius.circular(10))),
                 width: screenwidth * 0.86,
                 child: TextField(
+                  maxLines: null,
                   controller: description,
-                  obscureText: true,
                   style: const TextStyle(height: 2, fontSize: 20),
                 ),
               ),
               SizedBox(
                 height: screenlength / 20,
               ),
-              Row(
-                children: [
-                  Container(
-                      width: screenwidth * 0.3,
-                      height: 50,
-                      child: TextButton(
-                          style: ButtonStyle(
-                              tapTargetSize: MaterialTapTargetSize.padded,
-                              shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(20)))),
-                              backgroundColor: MaterialStateProperty.all(
-                                  Color.fromARGB(218, 94, 227, 250))),
-                          onPressed: () async {},
-                          child: const Text(
-                            "Save",
-                            style: TextStyle(fontSize: 18, color: Colors.black),
-                          ))),
-                  Container(
-                      width: screenwidth * 0.3,
-                      height: 50,
-                      child: TextButton(
-                          style: ButtonStyle(
-                              tapTargetSize: MaterialTapTargetSize.padded,
-                              shape: MaterialStateProperty.all(
-                                  RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(20)))),
-                              backgroundColor: MaterialStateProperty.all(
-                                  Color.fromARGB(218, 182, 228, 240))),
-                          onPressed: () {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                                "Register", (route) => false);
-                          },
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(fontSize: 18, color: Colors.black),
-                          ))),
-                ],
+              Container(
+                width: screenwidth * 0.7,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                        width: screenwidth * 0.3,
+                        height: 50,
+                        child: TextButton(
+                            style: ButtonStyle(
+                                tapTargetSize: MaterialTapTargetSize.padded,
+                                shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(20)))),
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color.fromARGB(218, 94, 227, 250))),
+                            onPressed: () async {
+                              await taskmangementservice.add_task(
+                                  title: title.text,
+                                  description: description.text,
+                                  email: authservice.user!.email);
+                            },
+                            child: const Text(
+                              "Save",
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.black),
+                            ))),
+                    Container(
+                        width: screenwidth * 0.3,
+                        height: 50,
+                        child: TextButton(
+                            style: ButtonStyle(
+                                tapTargetSize: MaterialTapTargetSize.padded,
+                                shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(20)))),
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color.fromARGB(218, 182, 228, 240))),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text(
+                              "Cancel",
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.black),
+                            ))),
+                  ],
+                ),
               ),
             ],
           ),

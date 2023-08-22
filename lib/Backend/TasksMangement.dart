@@ -24,8 +24,9 @@ class Taskmangementservice {
       await taskscollection.add({
         "user": email,
         "title": title,
+        "completed": false,
         "description": description,
-        "timestamp": Timestamp.now()
+        "date": DateTime.now()
       });
     } catch (e) {}
   }
@@ -33,11 +34,18 @@ class Taskmangementservice {
   Future<List<Task>> get_tasks({required String email}) async {
     try {
       List<Task> tasks = [];
+
       QuerySnapshot querySnapshot =
-          await taskscollection.where("email", isEqualTo: email).get();
+          await taskscollection.where("user", isEqualTo: email).get();
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
         dynamic docdata = doc.data();
-        if (docdata != null) {}
+        if (docdata != null) {
+          tasks.add(Task(
+              title: docdata["title"],
+              description: docdata["description"] ?? "",
+              completed: docdata["completed"] ?? false,
+              date: (docdata["date"] as Timestamp).toDate()));
+        }
         return tasks;
       }
     } catch (e) {
@@ -58,25 +66,48 @@ class Taskmangementservice {
   }
 
   Future<void> delete_task(
-      {required String email, required String timestamp}) async {
+      {required String email, required String date}) async {
     try {
       QuerySnapshot querydoc = await taskscollection
           .where("email", isEqualTo: email)
-          .where("timestamp", isEqualTo: timestamp)
+          .where("date", isEqualTo: date)
           .get();
       await taskscollection.doc(querydoc.docs.first.id).delete();
     } catch (e) {}
+  }
+
+  Future<void> finish_unfinish_task(
+      {required String email,
+      required DateTime date,
+      required bool status}) async {
+    try {
+      QuerySnapshot querySnapshot = (await taskscollection
+          .where(
+            "user",
+            isEqualTo: email,
+          )
+          .where("date", isEqualTo: date)
+          .get());
+
+      if (querySnapshot.docs.isNotEmpty) {
+        await taskscollection
+            .doc(querySnapshot.docs.first.id)
+            .update({"completed": status});
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> update_task(
       {required String title,
       required String description,
       required String email,
-      required Timestamp timestamp}) async {
+      required DateTime date}) async {
     try {
       QuerySnapshot querydoc = await taskscollection
           .where("email", isEqualTo: email)
-          .where("timestamp", isEqualTo: timestamp)
+          .where("date", isEqualTo: date.millisecondsSinceEpoch)
           .get();
       await taskscollection
           .doc(querydoc.docs.first.id)

@@ -36,12 +36,11 @@ class Authservice {
           .collection("users")
           .add({"email": email, "password": password});
       user = User(email: email);
-      print(user);
       Sharedprefs().ConfirmuserAction("email", email);
     } catch (e) {
       print(e);
+      user = null;
     }
-    user = null;
   }
 
   Future<void> signout() async {
@@ -69,13 +68,12 @@ class Authservice {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        print("object");
         user = User(email: email);
         Sharedprefs().ConfirmuserAction("email", email);
       }
     } catch (e) {
       print(e);
+      user = null;
     }
-    user = null;
   }
 }
