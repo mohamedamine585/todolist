@@ -6,7 +6,9 @@ import '../consts.dart';
 
 class Createupdatetasks extends StatefulWidget {
   String? title_text, description_text;
-  Createupdatetasks({super.key, this.description_text, this.title_text});
+  DateTime? date;
+  Createupdatetasks(
+      {super.key, this.description_text, this.title_text, this.date});
 
   @override
   State<Createupdatetasks> createState() => _CreateupdatetasksState();
@@ -34,7 +36,8 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
     final taskmangementservice = Taskmangementservice();
     final authservice = Authservice();
     final title_txt = widget.title_text,
-        description_text = widget.description_text;
+        description_text = widget.description_text,
+        date = widget.date;
     if (title_txt != null && description_text != null) {
       title.text = title_txt;
       description.text = description_text;
@@ -155,10 +158,20 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                                 backgroundColor: MaterialStateProperty.all(
                                     Color.fromARGB(218, 94, 227, 250))),
                             onPressed: () async {
-                              await taskmangementservice.add_task(
-                                  title: title.text,
-                                  description: description.text,
-                                  email: authservice.user!.email);
+                              if (title_txt != null &&
+                                  description_text != null &&
+                                  date != null) {
+                                await taskmangementservice.update_task(
+                                    title: title.text,
+                                    description: description.text,
+                                    email: authservice.user!.email,
+                                    date: date);
+                              } else {
+                                await taskmangementservice.add_task(
+                                    title: title.text,
+                                    description: description.text,
+                                    email: authservice.user!.email);
+                              }
 
                               Navigator.of(context).pop(true);
                             },

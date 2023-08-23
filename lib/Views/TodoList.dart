@@ -36,9 +36,10 @@ class _TodoListPageState extends State<TodoListPage> {
             child: IconButton(
                 onPressed: () async {
                   should_reload = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => Createupdatetasks()));
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Createupdatetasks())) ??
+                      false;
                   if (should_reload) {
                     setState(() {});
                   }
@@ -48,10 +49,21 @@ class _TodoListPageState extends State<TodoListPage> {
           Container(
             width: screenwidth * 0.1,
             child: IconButton(
+              icon: const Icon(Icons.delete_forever),
+              onPressed: () async {
+                await tasksmangementservice.delete_all_tasks(
+                    email: authservice.user!.email);
+                setState(() {});
+              },
+            ),
+          ),
+          Container(
+            width: screenwidth * 0.1,
+            child: IconButton(
                 onPressed: () async {
                   await authservice.signout();
-                  Navigator.of(context).pushNamedAndRemoveUntil<bool>(
-                      "signinpage", (route) => false);
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil("signinpage", (route) => false);
                 },
                 icon: const Icon(Icons.logout)),
           ),
@@ -95,7 +107,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   },
                   style: const TextStyle(fontSize: 20),
                   decoration: const InputDecoration(
-                    hintText: "Filter by number or name",
+                    hintText: "Filter by title",
                     focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.transparent)),
                     prefixIcon: Icon(Icons.search),
@@ -155,8 +167,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                 width: screenwidth * 0.95,
                                 height: screenlength * 0.3,
                                 child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
+                                  onTap: () async {
+                                    should_reload = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
@@ -167,7 +179,13 @@ class _TodoListPageState extends State<TodoListPage> {
                                                   description_text: data
                                                       .elementAt(index)
                                                       .description,
+                                                  date: data
+                                                      .elementAt(index)
+                                                      .date,
                                                 )));
+                                    if (should_reload) {
+                                      setState(() {});
+                                    }
                                   },
                                   child: Card(
                                     shadowColor: Colors.blue,
@@ -178,6 +196,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Container(
+                                            margin: EdgeInsetsDirectional.only(
+                                                start: screenwidth * 0.05),
                                             width: screenwidth * 0.6,
                                             child: Column(
                                               children: [
@@ -185,7 +205,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                                   height: 5,
                                                 ),
                                                 Container(
-                                                  width: screenwidth * 0.3,
+                                                  width: screenwidth * 0.6,
                                                   child: Text(
                                                     data.elementAt(index).title,
                                                     style: const TextStyle(
@@ -195,11 +215,14 @@ class _TodoListPageState extends State<TodoListPage> {
                                                     softWrap: true,
                                                   ),
                                                 ),
+                                                const Divider(
+                                                  thickness: 1,
+                                                ),
                                                 SizedBox(
                                                   height: screenlength * 0.05,
                                                 ),
                                                 Container(
-                                                  width: screenwidth * 0.3,
+                                                  width: screenwidth * 0.6,
                                                   child: Text(
                                                     data
                                                         .elementAt(index)
@@ -209,37 +232,86 @@ class _TodoListPageState extends State<TodoListPage> {
                                                 SizedBox(
                                                   height: screenlength * 0.05,
                                                 ),
-                                                Container(
-                                                  width: screenwidth * 0.3,
-                                                  child: Text(
-                                                    data
-                                                        .elementAt(index)
-                                                        .date
-                                                        .toString(),
-                                                  ),
+                                                const Divider(
+                                                  thickness: 1,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      width: screenwidth * 0.2,
+                                                      child: Text(
+                                                        data
+                                                            .elementAt(index)
+                                                            .date
+                                                            .toString(),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: screenwidth * 0.4,
+                                                    )
+                                                  ],
                                                 )
                                               ],
                                             ),
                                           ),
                                           Container(
-                                            width: screenwidth * 0.33,
-                                            child: Checkbox(
-                                                onChanged: (onchanged) async {
+                                            width: screenwidth * 0.21,
+                                            child: Row(
+                                              children: [
+                                                Checkbox(
+                                                    onChanged:
+                                                        (onchanged) async {
+                                                      await tasksmangementservice
+                                                          .finish_unfinish_task(
+                                                              email: authservice
+                                                                  .user!.email,
+                                                              date: data
+                                                                  .elementAt(
+                                                                      index)
+                                                                  .date,
+                                                              status:
+                                                                  onchanged!);
+                                                      setState(() {
+                                                        data[index].completed =
+                                                            onchanged;
+                                                        should_reload = false;
+                                                      });
+                                                    },
+                                                    value:
+                                                        data[index].completed),
+                                                SizedBox(
+                                                  width: screenwidth * 0.0001,
+                                                ),
+                                                Text(
+                                                  (data
+                                                          .elementAt(index)
+                                                          .completed)
+                                                      ? "done"
+                                                      : "doing",
+                                                  style: (data
+                                                          .elementAt(index)
+                                                          .completed)
+                                                      ? const TextStyle(
+                                                          color: Colors.blue)
+                                                      : null,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            width: screenwidth * 0.1,
+                                            child: IconButton(
+                                                onPressed: () async {
                                                   await tasksmangementservice
-                                                      .finish_unfinish_task(
+                                                      .delete_task(
                                                           email: authservice
                                                               .user!.email,
                                                           date: data
                                                               .elementAt(index)
-                                                              .date,
-                                                          status: onchanged!);
-                                                  setState(() {
-                                                    data[index].completed =
-                                                        onchanged;
-                                                    should_reload = false;
-                                                  });
+                                                              .date);
+                                                  setState(() {});
                                                 },
-                                                value: data[index].completed),
+                                                icon: const Icon(Icons.delete)),
                                           ),
                                         ],
                                       ),

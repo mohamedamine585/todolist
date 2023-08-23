@@ -59,7 +59,7 @@ class Taskmangementservice {
   Future<void> delete_all_tasks({required String email}) async {
     try {
       QuerySnapshot querydoc =
-          await taskscollection.where("email", isEqualTo: email).get();
+          await taskscollection.where("user", isEqualTo: email).get();
       for (QueryDocumentSnapshot x in querydoc.docs) {
         await taskscollection.doc(x.id).delete();
       }
@@ -68,10 +68,10 @@ class Taskmangementservice {
   }
 
   Future<void> delete_task(
-      {required String email, required String date}) async {
+      {required String email, required DateTime date}) async {
     try {
       QuerySnapshot querydoc = await taskscollection
-          .where("email", isEqualTo: email)
+          .where("user", isEqualTo: email)
           .where("date", isEqualTo: date)
           .get();
       await taskscollection.doc(querydoc.docs.first.id).delete();
@@ -108,12 +108,11 @@ class Taskmangementservice {
       required DateTime date}) async {
     try {
       QuerySnapshot querydoc = await taskscollection
-          .where("email", isEqualTo: email)
-          .where("date", isEqualTo: date.millisecondsSinceEpoch)
+          .where("user", isEqualTo: email)
+          .where("date", isEqualTo: date)
           .get();
-      await taskscollection
-          .doc(querydoc.docs.first.id)
-          .update({"title": title, "description": description});
+      await taskscollection.doc(querydoc.docs.first.id).update(
+          {"title": title, "description": description, "date": DateTime.now()});
     } catch (e) {}
   }
 }
