@@ -43,6 +43,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
       description.text = description_text;
     }
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.black),
         elevation: 0,
@@ -53,7 +54,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
             ),
             Text(
               (title_txt == null && description_text == null)
-                  ? "Add Task"
+                  ? "Add a Task"
                   : "Update Task",
               style: const TextStyle(
                   color: Colors.black,

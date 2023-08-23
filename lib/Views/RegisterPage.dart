@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/Backend/Authservice.dart';
+import 'package:to_do_app/Backend/Devicesystem.dart';
 import 'package:to_do_app/Views/Alertdialog.dart';
 
 import '../consts.dart';
@@ -159,34 +160,51 @@ class _RegisterPageState extends State<RegisterPage> {
                           backgroundColor: MaterialStateProperty.all(
                               Color.fromARGB(218, 94, 227, 250))),
                       onPressed: () async {
-                        if (password.text == cnfpassword.text) {
-                          final what_happend = await authservice.signup(
-                              email: email.text, password: password.text);
-                          if (authservice.user == null) {
-                            if (what_happend == false) {
-                              showDialog(
+                        final conn = await Devicesystem().check_coonection();
+                        if (!conn) {
+                          showDialog(
+                              context: context,
+                              builder: (context) => show_alert(
                                   context: context,
-                                  builder: (context) => show_alert(
+                                  message: "Check connection"));
+                        } else {
+                          if (email.text != "" && password.text != "") {
+                            if (password.text == cnfpassword.text) {
+                              final what_happend = await authservice.signup(
+                                  email: email.text, password: password.text);
+                              if (authservice.user == null) {
+                                if (what_happend == false) {
+                                  showDialog(
                                       context: context,
-                                      message:
-                                          "User already exists with those Credentials"));
+                                      builder: (context) => show_alert(
+                                          context: context,
+                                          message:
+                                              "User already exists with those Credentials"));
+                                } else {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => show_alert(
+                                          context: context,
+                                          message: "Sign up failed"));
+                                }
+                              } else {
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                    "todolistpage", (route) => false);
+                              }
                             } else {
                               showDialog(
                                   context: context,
                                   builder: (context) => show_alert(
                                       context: context,
-                                      message: "Sign up failed"));
+                                      message: "Passwords doesn't match"));
                             }
                           } else {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                                "todolistpage", (route) => false);
+                            showDialog(
+                                context: context,
+                                builder: (context) => show_alert(
+                                    context: context,
+                                    message: "Inacceptable email or password"));
                           }
-                        } else {
-                          showDialog(
-                              context: context,
-                              builder: (context) => show_alert(
-                                  context: context,
-                                  message: "Passwords doesn't match"));
                         }
                       },
                       child: const Text(

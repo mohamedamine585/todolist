@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/Backend/Authservice.dart';
+import 'package:to_do_app/Backend/Devicesystem.dart';
 import 'package:to_do_app/Views/Alertdialog.dart';
 
 import '../consts.dart';
@@ -13,8 +14,15 @@ class SigninPage extends StatefulWidget {
 }
 
 class _SigninPageState extends State<SigninPage> {
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
+  late TextEditingController email;
+  late TextEditingController password;
+  @override
+  void initState() {
+    email = TextEditingController();
+    password = TextEditingController();
+    super.initState();
+  }
+
   @override
   void dispose() {
     email.dispose();
@@ -24,6 +32,7 @@ class _SigninPageState extends State<SigninPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authservice = Authservice();
     return Scaffold(
       body: SingleChildScrollView(
         child: Center(
@@ -120,17 +129,26 @@ class _SigninPageState extends State<SigninPage> {
                           backgroundColor: MaterialStateProperty.all(
                               Color.fromARGB(218, 94, 227, 250))),
                       onPressed: () async {
-                        await Authservice()
-                            .signin(email: email.text, password: password.text);
-                        if (Authservice().user != null) {
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                              "todolistpage", (route) => false);
-                        } else {
+                        final conn = await Devicesystem().check_coonection();
+                        if (!conn) {
                           showDialog(
                               context: context,
                               builder: (context) => show_alert(
                                   context: context,
-                                  message: "Wrong Credentials"));
+                                  message: "Check connection"));
+                        } else {
+                          await authservice.signin(
+                              email: email.text, password: password.text);
+                          if (Authservice().user != null) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                "todolistpage", (route) => false);
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (context) => show_alert(
+                                    context: context,
+                                    message: "Wrong Credentials"));
+                          }
                         }
                       },
                       child: const Text(
