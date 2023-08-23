@@ -166,10 +166,12 @@ class _TodoListPageState extends State<TodoListPage> {
                           },
                           child: Column(
                             children: [
-                              GFProgressBar(
-                                percentage: tasksmangementservice
-                                    .completed_task(tasks: data),
-                              ),
+                              (data.isNotEmpty)
+                                  ? GFProgressBar(
+                                      percentage: tasksmangementservice
+                                          .completed_task(tasks: data),
+                                    )
+                                  : const SizedBox(),
                               SizedBox(
                                 height: screenwidth * 0.05,
                               ),
