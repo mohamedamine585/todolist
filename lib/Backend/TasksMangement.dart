@@ -16,6 +16,16 @@ class Taskmangementservice {
     } catch (e) {}
   }
 
+  double completed_task({required List<Task> tasks}) {
+    try {
+      return (tasks.where((element) => element.completed == true).length != 0)
+          ? tasks.where((element) => element.completed == true).length /
+              tasks.length
+          : 0;
+    } catch (e) {}
+    return 0;
+  }
+
   Future<void> add_task(
       {required String title,
       required String description,

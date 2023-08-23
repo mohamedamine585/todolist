@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:getwidget/components/progress_bar/gf_progress_bar.dart';
 import 'package:to_do_app/Backend/Authservice.dart';
 import 'package:to_do_app/Backend/Task.dart';
 import 'package:to_do_app/Backend/TasksMangement.dart';
@@ -114,10 +115,13 @@ class _TodoListPageState extends State<TodoListPage> {
                   ),
                 )),
             SizedBox(
-              height: screenlength * 0.05,
+              height: screenlength * 0.01,
             ),
             Divider(
               thickness: 1,
+            ),
+            SizedBox(
+              height: screenlength * 0.005,
             ),
             Container(
               height: screenlength * 0.63,
@@ -160,166 +164,203 @@ class _TodoListPageState extends State<TodoListPage> {
                               should_reload = true;
                             });
                           },
-                          child: ListView.builder(
-                            itemCount: data.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                width: screenwidth * 0.95,
-                                height: screenlength * 0.3,
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    should_reload = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                Createupdatetasks(
-                                                  title_text: data
-                                                      .elementAt(index)
-                                                      .title,
-                                                  description_text: data
-                                                      .elementAt(index)
-                                                      .description,
-                                                  date: data
-                                                      .elementAt(index)
-                                                      .date,
-                                                )));
-                                    if (should_reload) {
-                                      setState(() {});
-                                    }
-                                  },
-                                  child: Card(
-                                    shadowColor: Colors.blue,
-                                    elevation: 4,
-                                    child: SingleChildScrollView(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Container(
-                                            margin: EdgeInsetsDirectional.only(
-                                                start: screenwidth * 0.05),
-                                            width: screenwidth * 0.6,
-                                            child: Column(
-                                              children: [
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Container(
-                                                  width: screenwidth * 0.6,
-                                                  child: Text(
-                                                    data.elementAt(index).title,
-                                                    style: const TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    softWrap: true,
-                                                  ),
-                                                ),
-                                                const Divider(
-                                                  thickness: 1,
-                                                ),
-                                                SizedBox(
-                                                  height: screenlength * 0.05,
-                                                ),
-                                                Container(
-                                                  width: screenwidth * 0.6,
-                                                  child: Text(
-                                                    data
-                                                        .elementAt(index)
-                                                        .description,
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  height: screenlength * 0.05,
-                                                ),
-                                                const Divider(
-                                                  thickness: 1,
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Container(
-                                                      width: screenwidth * 0.2,
-                                                      child: Text(
-                                                        data
+                          child: Column(
+                            children: [
+                              GFProgressBar(
+                                percentage: tasksmangementservice
+                                    .completed_task(tasks: data),
+                              ),
+                              SizedBox(
+                                height: screenwidth * 0.05,
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: data.length,
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                      width: screenwidth * 0.95,
+                                      height: screenlength * 0.3,
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          should_reload = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      Createupdatetasks(
+                                                        title_text: data
                                                             .elementAt(index)
-                                                            .date
-                                                            .toString(),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: screenwidth * 0.4,
-                                                    )
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            width: screenwidth * 0.21,
+                                                            .title,
+                                                        description_text: data
+                                                            .elementAt(index)
+                                                            .description,
+                                                        date: data
+                                                            .elementAt(index)
+                                                            .date,
+                                                      )));
+                                          if (should_reload) {
+                                            setState(() {});
+                                          }
+                                        },
+                                        child: Card(
+                                          shadowColor: Colors.blue,
+                                          elevation: 4,
+                                          child: SingleChildScrollView(
                                             child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
-                                                Checkbox(
-                                                    onChanged:
-                                                        (onchanged) async {
-                                                      await tasksmangementservice
-                                                          .finish_unfinish_task(
-                                                              email: authservice
-                                                                  .user!.email,
-                                                              date: data
+                                                Container(
+                                                  margin: EdgeInsetsDirectional
+                                                      .only(
+                                                          start: screenwidth *
+                                                              0.05),
+                                                  width: screenwidth * 0.6,
+                                                  child: Column(
+                                                    children: [
+                                                      const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                      Container(
+                                                        width:
+                                                            screenwidth * 0.6,
+                                                        child: Text(
+                                                          data
+                                                              .elementAt(index)
+                                                              .title,
+                                                          style: const TextStyle(
+                                                              fontSize: 20,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                          softWrap: true,
+                                                        ),
+                                                      ),
+                                                      const Divider(
+                                                        thickness: 1,
+                                                      ),
+                                                      SizedBox(
+                                                        height:
+                                                            screenlength * 0.05,
+                                                      ),
+                                                      Container(
+                                                        width:
+                                                            screenwidth * 0.6,
+                                                        child: Text(
+                                                          data
+                                                              .elementAt(index)
+                                                              .description,
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                        height:
+                                                            screenlength * 0.05,
+                                                      ),
+                                                      const Divider(
+                                                        thickness: 1,
+                                                      ),
+                                                      Row(
+                                                        children: [
+                                                          Container(
+                                                            width: screenwidth *
+                                                                0.2,
+                                                            child: Text(
+                                                              data
                                                                   .elementAt(
                                                                       index)
-                                                                  .date,
-                                                              status:
-                                                                  onchanged!);
-                                                      setState(() {
-                                                        data[index].completed =
-                                                            onchanged;
-                                                        should_reload = false;
-                                                      });
-                                                    },
-                                                    value:
-                                                        data[index].completed),
-                                                SizedBox(
-                                                  width: screenwidth * 0.0001,
+                                                                  .date
+                                                                  .toString(),
+                                                            ),
+                                                          ),
+                                                          SizedBox(
+                                                            width: screenwidth *
+                                                                0.4,
+                                                          )
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
                                                 ),
-                                                Text(
-                                                  (data
-                                                          .elementAt(index)
-                                                          .completed)
-                                                      ? "done"
-                                                      : "doing",
-                                                  style: (data
-                                                          .elementAt(index)
-                                                          .completed)
-                                                      ? const TextStyle(
-                                                          color: Colors.blue)
-                                                      : null,
-                                                )
+                                                Container(
+                                                  width: screenwidth * 0.21,
+                                                  child: Row(
+                                                    children: [
+                                                      Checkbox(
+                                                          onChanged:
+                                                              (onchanged) async {
+                                                            await tasksmangementservice
+                                                                .finish_unfinish_task(
+                                                                    email: authservice
+                                                                        .user!
+                                                                        .email,
+                                                                    date: data
+                                                                        .elementAt(
+                                                                            index)
+                                                                        .date,
+                                                                    status:
+                                                                        onchanged!);
+                                                            setState(() {
+                                                              data[index]
+                                                                      .completed =
+                                                                  onchanged;
+                                                              should_reload =
+                                                                  false;
+                                                            });
+                                                          },
+                                                          value: data[index]
+                                                              .completed),
+                                                      SizedBox(
+                                                        width: screenwidth *
+                                                            0.0001,
+                                                      ),
+                                                      Text(
+                                                        (data
+                                                                .elementAt(
+                                                                    index)
+                                                                .completed)
+                                                            ? "done"
+                                                            : "doing",
+                                                        style: (data
+                                                                .elementAt(
+                                                                    index)
+                                                                .completed)
+                                                            ? const TextStyle(
+                                                                color:
+                                                                    Colors.blue)
+                                                            : null,
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: screenwidth * 0.1,
+                                                  child: IconButton(
+                                                      onPressed: () async {
+                                                        await tasksmangementservice
+                                                            .delete_task(
+                                                                email:
+                                                                    authservice
+                                                                        .user!
+                                                                        .email,
+                                                                date: data
+                                                                    .elementAt(
+                                                                        index)
+                                                                    .date);
+                                                        setState(() {});
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.delete)),
+                                                ),
                                               ],
                                             ),
                                           ),
-                                          Container(
-                                            width: screenwidth * 0.1,
-                                            child: IconButton(
-                                                onPressed: () async {
-                                                  await tasksmangementservice
-                                                      .delete_task(
-                                                          email: authservice
-                                                              .user!.email,
-                                                          date: data
-                                                              .elementAt(index)
-                                                              .date);
-                                                  setState(() {});
-                                                },
-                                                icon: const Icon(Icons.delete)),
-                                          ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           ));
                     } else {
                       return const Center(
