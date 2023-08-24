@@ -34,6 +34,20 @@ class _SigninPageState extends State<SigninPage> {
   Widget build(BuildContext context) {
     final authservice = Authservice();
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Center(
+          child: Text(
+            "Todo app",
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: screenwidth * 0.1,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -135,7 +149,8 @@ class _SigninPageState extends State<SigninPage> {
                               context: context,
                               builder: (context) => show_alert(
                                   context: context,
-                                  message: "Check connection"));
+                                  message: "Check connection",
+                                  wait_response: false));
                         } else {
                           await authservice.signin(
                               email: email.text, password: password.text);
@@ -147,7 +162,8 @@ class _SigninPageState extends State<SigninPage> {
                                 context: context,
                                 builder: (context) => show_alert(
                                     context: context,
-                                    message: "Wrong Credentials"));
+                                    message: "Wrong Credentials",
+                                    wait_response: false));
                           }
                         }
                       },

@@ -36,13 +36,25 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Center(
+          child: Text(
+            "Todo app",
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: screenwidth * 0.1,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
-              SizedBox(
-                height: screenlength * 0.1,
-              ),
+              SizedBox(height: screenlength * 0.12),
               const Text(
                 "Sign up",
                 style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
@@ -166,7 +178,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               context: context,
                               builder: (context) => show_alert(
                                   context: context,
-                                  message: "Check connection"));
+                                  message: "Check connection",
+                                  wait_response: false));
                         } else {
                           if (email.text != "" && password.text != "") {
                             if (password.text == cnfpassword.text) {
@@ -179,13 +192,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                       builder: (context) => show_alert(
                                           context: context,
                                           message:
-                                              "User already exists with those Credentials"));
+                                              "User already exists with those Credentials",
+                                          wait_response: false));
                                 } else {
                                   showDialog(
                                       context: context,
                                       builder: (context) => show_alert(
                                           context: context,
-                                          message: "Sign up failed"));
+                                          message: "Sign up failed",
+                                          wait_response: true));
                                 }
                               } else {
                                 Navigator.of(context).pushNamedAndRemoveUntil(
@@ -196,14 +211,16 @@ class _RegisterPageState extends State<RegisterPage> {
                                   context: context,
                                   builder: (context) => show_alert(
                                       context: context,
-                                      message: "Passwords doesn't match"));
+                                      message: "Passwords doesn't match",
+                                      wait_response: false));
                             }
                           } else {
                             showDialog(
                                 context: context,
                                 builder: (context) => show_alert(
                                     context: context,
-                                    message: "Inacceptable email or password"));
+                                    message: "Inacceptable email or password",
+                                    wait_response: false));
                           }
                         }
                       },

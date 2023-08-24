@@ -29,6 +29,7 @@ class HomePage extends StatelessWidget {
 
 Future<void> all_init(BuildContext context) async {
   try {
+    WidgetsFlutterBinding.ensureInitialized();
     screenlength = MediaQuery.of(context).size.height;
     screenwidth = MediaQuery.of(context).size.width;
     await Firebase.initializeApp(

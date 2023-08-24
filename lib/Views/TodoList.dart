@@ -3,6 +3,7 @@ import 'package:getwidget/components/progress_bar/gf_progress_bar.dart';
 import 'package:to_do_app/Backend/Authservice.dart';
 import 'package:to_do_app/Backend/Task.dart';
 import 'package:to_do_app/Backend/TasksMangement.dart';
+import 'package:to_do_app/Views/Alertdialog.dart';
 import 'package:to_do_app/Views/CreateOrUpdateTask.dart';
 
 import '../consts.dart';
@@ -35,26 +36,20 @@ class _TodoListPageState extends State<TodoListPage> {
           Container(
             width: screenwidth * 0.1,
             child: IconButton(
-                onPressed: () async {
-                  should_reload = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => Createupdatetasks())) ??
-                      false;
-                  if (should_reload) {
-                    setState(() {});
-                  }
-                },
-                icon: const Icon(Icons.add)),
-          ),
-          Container(
-            width: screenwidth * 0.1,
-            child: IconButton(
               icon: const Icon(Icons.delete_forever),
               onPressed: () async {
-                await tasksmangementservice.delete_all_tasks(
-                    email: authservice.user!.email);
-                setState(() {});
+                final should_delete = await showDialog(
+                    context: context,
+                    builder: (context) => show_alert(
+                        context: context,
+                        message: "Do you want to delete all tasks ?",
+                        wait_response: true));
+
+                if (should_delete) {
+                  await tasksmangementservice.delete_all_tasks(
+                      email: authservice.user!.email);
+                  setState(() {});
+                }
               },
             ),
           ),
@@ -95,7 +90,7 @@ class _TodoListPageState extends State<TodoListPage> {
             ),
             Container(
                 width: screenwidth * 0.9,
-                height: 40,
+                height: screenlength * 0.05,
                 decoration: BoxDecoration(
                     border: Border.all(),
                     borderRadius: const BorderRadius.all(Radius.circular(20))),
@@ -124,9 +119,9 @@ class _TodoListPageState extends State<TodoListPage> {
               height: screenlength * 0.005,
             ),
             Container(
-              height: screenlength * 0.63,
-              child: FutureBuilder(
-                  future: (should_reload)
+              height: screenlength * 0.77,
+              child: StreamBuilder(
+                  stream: (should_reload)
                       ? tasksmangementservice.get_tasks(
                           email: authservice.user!.email)
                       : null,
@@ -145,16 +140,29 @@ class _TodoListPageState extends State<TodoListPage> {
                             color: Color.fromARGB(255, 130, 190, 239)),
                       );
                     }
-                    if (snapshot.connectionState == ConnectionState.done ||
-                        !should_reload) {
-                      if ((!snapshot.hasData || snapshot.data == []) &&
-                          should_reload) {
-                        return const Column(
+                    if (snapshot.connectionState != ConnectionState.none) {
+                      if (snapshot.data?.isEmpty ?? true) {
+                        return Column(
                           children: [
-                            Text(
-                              "No data",
-                              style: TextStyle(fontSize: 40),
+                            FloatingActionButton(
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            Createupdatetasks()));
+                              },
+                              child: const Icon(Icons.add),
                             ),
+                            SizedBox(
+                              height: screenlength * 0.2,
+                            ),
+                            Container(
+                              child: Text(
+                                "No Tasks",
+                                style: TextStyle(fontSize: 40),
+                              ),
+                            )
                           ],
                         );
                       }
@@ -175,6 +183,24 @@ class _TodoListPageState extends State<TodoListPage> {
                               SizedBox(
                                 height: screenwidth * 0.05,
                               ),
+                              Container(
+                                height: screenlength * 0.05,
+                                child: FloatingActionButton(
+                                  backgroundColor:
+                                      Color.fromARGB(255, 88, 197, 240),
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                Createupdatetasks()));
+                                  },
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
                               Expanded(
                                 child: ListView.builder(
                                   itemCount: data.length,
@@ -183,8 +209,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                       width: screenwidth * 0.95,
                                       height: screenlength * 0.3,
                                       child: GestureDetector(
-                                        onTap: () async {
-                                          should_reload = await Navigator.push(
+                                        onTap: () {
+                                          Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
@@ -199,9 +225,6 @@ class _TodoListPageState extends State<TodoListPage> {
                                                             .elementAt(index)
                                                             .date,
                                                       )));
-                                          if (should_reload) {
-                                            setState(() {});
-                                          }
                                         },
                                         child: Card(
                                           shadowColor: Colors.blue,
@@ -301,13 +324,6 @@ class _TodoListPageState extends State<TodoListPage> {
                                                                         .date,
                                                                     status:
                                                                         onchanged!);
-                                                            setState(() {
-                                                              data[index]
-                                                                      .completed =
-                                                                  onchanged;
-                                                              should_reload =
-                                                                  false;
-                                                            });
                                                           },
                                                           value: data[index]
                                                               .completed),
@@ -348,7 +364,6 @@ class _TodoListPageState extends State<TodoListPage> {
                                                                     .elementAt(
                                                                         index)
                                                                     .date);
-                                                        setState(() {});
                                                       },
                                                       icon: const Icon(
                                                           Icons.delete)),
@@ -365,11 +380,24 @@ class _TodoListPageState extends State<TodoListPage> {
                             ],
                           ));
                     } else {
-                      return const Center(
-                        child: Text(
-                          "No data",
-                          style: TextStyle(fontSize: 40),
-                        ),
+                      return Column(
+                        children: [
+                          FloatingActionButton(
+                            onPressed: () {
+                              setState(() {});
+                            },
+                            child: const Icon(Icons.refresh),
+                          ),
+                          SizedBox(
+                            height: screenlength * 0.2,
+                          ),
+                          Container(
+                            child: Text(
+                              "No Tasks",
+                              style: TextStyle(fontSize: 40),
+                            ),
+                          )
+                        ],
                       );
                     }
                   }),

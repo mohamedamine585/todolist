@@ -41,29 +41,23 @@ class Taskmangementservice {
     } catch (e) {}
   }
 
-  Future<List<Task>> get_tasks({required String email}) async {
+  Stream<Iterable<Task>> get_tasks({required String email}) {
     try {
-      List<Task> tasks = [];
-
-      QuerySnapshot querySnapshot =
-          await taskscollection.where("user", isEqualTo: email).get();
-      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-        dynamic docdata = doc.data();
-
-        if (docdata != null) {
-          tasks.add(Task(
-              title: docdata["title"],
-              description: docdata["description"] ?? "",
-              completed: docdata["completed"] ?? false,
-              date: (docdata["date"] as Timestamp).toDate()));
-        }
-      }
-      tasks.sort((a, b) => b.date.compareTo(a.date));
-      return tasks;
+      return taskscollection
+          .where("user", isEqualTo: email)
+          .snapshots()
+          .map((event) => event.docs.map((e) {
+                final data = e.data() as dynamic;
+                return Task(
+                    title: data["title"],
+                    description: data["description"],
+                    completed: data["completed"],
+                    date: (data["date"] as Timestamp).toDate());
+              }));
     } catch (e) {
       print(e);
     }
-    return [];
+    return const Stream.empty();
   }
 
   Future<void> delete_all_tasks({required String email}) async {
