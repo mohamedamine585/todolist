@@ -1,10 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:to_do_app/Backend/Authservice.dart';
-import 'package:to_do_app/Backend/TasksMangement.dart';
-import 'package:to_do_app/Views/LoginPage.dart';
-import 'package:to_do_app/Views/TodoList.dart';
+import 'package:to_do_app/Backend/services/Authservice.dart';
+import 'package:to_do_app/Backend/services/TasksMangement.dart';
+import 'package:to_do_app/Views/Pages/LoginPage.dart';
+import 'package:to_do_app/Views/Pages/TodoListPage.dart';
 import 'package:to_do_app/consts.dart';
 import 'package:to_do_app/firebase_options.dart';
 

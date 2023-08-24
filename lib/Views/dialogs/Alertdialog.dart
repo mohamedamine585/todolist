@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../consts.dart';
+import '../../consts.dart';
 
 AlertDialog show_alert(
     {required BuildContext context,

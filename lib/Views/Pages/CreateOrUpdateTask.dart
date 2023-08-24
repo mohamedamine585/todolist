@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:to_do_app/Backend/Authservice.dart';
-import 'package:to_do_app/Backend/TasksMangement.dart';
 
-import '../consts.dart';
+import '../../Backend/services/Authservice.dart';
+import '../../Backend/services/TasksMangement.dart';
+import '../../consts.dart';
 
 class Createupdatetasks extends StatefulWidget {
   String? title_text, description_text;

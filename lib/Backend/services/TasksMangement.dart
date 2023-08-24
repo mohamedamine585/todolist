@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'Task.dart';
+import '../modules/Task.dart';
 
 class Taskmangementservice {
   static final Taskmangementservice _instance = Taskmangementservice._();

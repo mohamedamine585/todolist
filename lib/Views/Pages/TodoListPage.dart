@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:getwidget/components/progress_bar/gf_progress_bar.dart';
-import 'package:to_do_app/Backend/Authservice.dart';
-import 'package:to_do_app/Backend/Task.dart';
-import 'package:to_do_app/Backend/TasksMangement.dart';
-import 'package:to_do_app/Views/Alertdialog.dart';
-import 'package:to_do_app/Views/CreateOrUpdateTask.dart';
-
-import '../consts.dart';
+import 'package:to_do_app/Backend/services/Authservice.dart';
+import 'package:to_do_app/Backend/modules/Task.dart';
+import 'package:to_do_app/Backend/services/TasksMangement.dart';
+import 'package:to_do_app/Views/dialogs/Alertdialog.dart';
+import 'package:to_do_app/Views/Pages/CreateOrUpdateTask.dart';
+import 'package:to_do_app/consts.dart';
 
 class TodoListPage extends StatefulWidget {
   const TodoListPage({super.key});

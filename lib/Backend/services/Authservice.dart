@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypt/crypt.dart';
-import 'package:to_do_app/Backend/Sharedpref.dart';
 
-import 'User.dart';
+import '../modules/User.dart';
+import 'Sharedpref.dart';
 
 class Authservice {
   static final Authservice _instance = Authservice._();

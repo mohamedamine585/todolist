@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:to_do_app/Backend/Authservice.dart';
-import 'package:to_do_app/Backend/Devicesystem.dart';
-import 'package:to_do_app/Views/Alertdialog.dart';
+import 'package:to_do_app/Backend/services/Authservice.dart';
+import 'package:to_do_app/Backend/services/Devicesystem.dart';
+import 'package:to_do_app/Views/dialogs/Alertdialog.dart';
+import 'package:to_do_app/consts.dart';
 
-import '../consts.dart';
-
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class SigninPage extends StatefulWidget {
+  const SigninPage({
+    super.key,
+  });
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<SigninPage> createState() => _SigninPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _SigninPageState extends State<SigninPage> {
   late TextEditingController email;
   late TextEditingController password;
-  late TextEditingController cnfpassword;
-
   @override
   void initState() {
     email = TextEditingController();
     password = TextEditingController();
-    cnfpassword = TextEditingController();
     super.initState();
   }
 
@@ -28,13 +26,12 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     email.dispose();
     password.dispose();
-    cnfpassword.dispose();
     super.dispose();
   }
 
-  final authservice = Authservice();
   @override
   Widget build(BuildContext context) {
+    final authservice = Authservice();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -54,20 +51,22 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Center(
           child: Column(
             children: [
-              SizedBox(height: screenlength * 0.12),
+              SizedBox(
+                height: screenlength / 6,
+              ),
               const Text(
-                "Sign up",
+                "Sign in",
                 style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(
-                height: 50,
+              SizedBox(
+                height: screenlength / 13,
               ),
               Row(
                 children: [
                   SizedBox(
                     width: screenwidth / 13,
                   ),
-                  const Column(
+                  Column(
                     children: [
                       Text(
                         "Email",
@@ -87,13 +86,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     borderRadius: BorderRadius.all(Radius.circular(10))),
                 child: TextField(
                   controller: email,
-                  style: TextStyle(
+                  style: const TextStyle(
+                    fontSize: 20,
                     height: 2,
                   ),
                 ),
               ),
-              const SizedBox(
-                height: 10,
+              SizedBox(
+                height: screenlength / 70,
               ),
               Row(
                 children: [
@@ -104,9 +104,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     children: [
                       Text(
                         "Password",
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(
+                          fontSize: 18,
+                        ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 5,
                       )
                     ],
@@ -116,51 +118,19 @@ class _RegisterPageState extends State<RegisterPage> {
               Container(
                 decoration: BoxDecoration(
                     border: Border.all(),
-                    borderRadius: const BorderRadius.all(Radius.circular(10))),
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
                 width: screenwidth * 0.86,
                 child: TextField(
                   controller: password,
                   obscureText: true,
-                  style: const TextStyle(
-                    height: 2,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Row(
-                children: [
-                  SizedBox(
-                    width: screenwidth / 13,
-                  ),
-                  const Text(
-                    "Confirm Password",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                width: screenwidth * 0.86,
-                child: TextField(
-                  controller: cnfpassword,
-                  obscureText: true,
-                  style: TextStyle(
-                    height: 2,
-                  ),
+                  style: const TextStyle(height: 2, fontSize: 20),
                 ),
               ),
               SizedBox(
-                height: 20,
+                height: screenlength / 20,
               ),
               Container(
-                  width: screenwidth * 0.7,
+                  width: screenwidth * 0.70,
                   height: 50,
                   child: TextButton(
                       style: ButtonStyle(
@@ -181,51 +151,23 @@ class _RegisterPageState extends State<RegisterPage> {
                                   message: "Check connection",
                                   wait_response: false));
                         } else {
-                          if (email.text != "" && password.text != "") {
-                            if (password.text == cnfpassword.text) {
-                              final what_happend = await authservice.signup(
-                                  email: email.text, password: password.text);
-                              if (authservice.user == null) {
-                                if (what_happend == false) {
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) => show_alert(
-                                          context: context,
-                                          message:
-                                              "User already exists with those Credentials",
-                                          wait_response: false));
-                                } else {
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) => show_alert(
-                                          context: context,
-                                          message: "Sign up failed",
-                                          wait_response: true));
-                                }
-                              } else {
-                                Navigator.of(context).pushNamedAndRemoveUntil(
-                                    "todolistpage", (route) => false);
-                              }
-                            } else {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => show_alert(
-                                      context: context,
-                                      message: "Passwords doesn't match",
-                                      wait_response: false));
-                            }
+                          await authservice.signin(
+                              email: email.text, password: password.text);
+                          if (Authservice().user != null) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                "todolistpage", (route) => false);
                           } else {
                             showDialog(
                                 context: context,
                                 builder: (context) => show_alert(
                                     context: context,
-                                    message: "Inacceptable email or password",
+                                    message: "Wrong Credentials",
                                     wait_response: false));
                           }
                         }
                       },
                       child: const Text(
-                        "Sign up",
+                        "Sign in",
                         style: TextStyle(fontSize: 18, color: Colors.black),
                       ))),
               const SizedBox(
@@ -245,12 +187,15 @@ class _RegisterPageState extends State<RegisterPage> {
                               Color.fromARGB(218, 182, 228, 240))),
                       onPressed: () {
                         Navigator.of(context).pushNamedAndRemoveUntil(
-                            "signinpage", (route) => false);
+                            "signuppage", (route) => false);
                       },
                       child: const Text(
-                        "I'm already in",
+                        "Sign up",
                         style: TextStyle(fontSize: 18, color: Colors.black),
                       ))),
+              SizedBox(
+                height: 70,
+              ),
             ],
           ),
         ),
