@@ -186,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               if (password.text == cnfpassword.text) {
                                 final what_happend = await authservice.signup(
                                     email: email.text, password: password.text);
-                                if (authservice.user == null) {
+                                if (user == null) {
                                   if (what_happend == false) {
                                     showDialog(
                                         context: context,

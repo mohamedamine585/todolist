@@ -42,6 +42,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
       title.text = title_txt;
       description.text = description_text;
     }
+    DateTime dateTime = ModalRoute.of(context)!.settings.arguments as DateTime;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -165,13 +166,14 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                                 await taskmangementservice.update_task(
                                     title: title.text,
                                     description: description.text,
-                                    email: authservice.user!.email,
+                                    email: user!.email,
                                     date: date);
                               } else {
                                 await taskmangementservice.add_task(
                                     title: title.text,
                                     description: description.text,
-                                    email: authservice.user!.email);
+                                    email: user!.email,
+                                    date: dateTime);
                               }
 
                               Navigator.of(context).pop(true);

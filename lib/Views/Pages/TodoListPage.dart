@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:getwidget/components/progress_bar/gf_progress_bar.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_app/Backend/modules/Days.dart';
+import 'package:to_do_app/Backend/providers/days_provider.dart';
 import 'package:to_do_app/Backend/services/Authservice.dart';
 import 'package:to_do_app/Backend/modules/Task.dart';
 import 'package:to_do_app/Backend/services/TasksMangement.dart';
+import 'package:to_do_app/Backend/usefulfunctions.dart';
 import 'package:to_do_app/Views/dialogs/Alertdialog.dart';
 import 'package:to_do_app/Views/Pages/CreateOrUpdateTask.dart';
 import 'package:to_do_app/consts.dart';
@@ -25,44 +29,14 @@ class _TodoListPageState extends State<TodoListPage> {
   final tasksmangementservice = Taskmangementservice();
   final authservice = Authservice();
   List<Task> data = [];
-  bool should_reload = true;
+  bool should_reload = true, should_reload_days = true;
+  DateTime selected_day = DateTime.now();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromARGB(255, 214, 211, 211),
       appBar: AppBar(
-        actions: [
-          Container(
-            width: screenwidth * 0.1,
-            child: IconButton(
-              icon: const Icon(Icons.delete_forever),
-              onPressed: () async {
-                final should_delete = await showDialog(
-                    context: context,
-                    builder: (context) => show_alert(
-                        context: context,
-                        message: "Do you want to delete all tasks ?",
-                        wait_response: true));
-
-                if (should_delete) {
-                  await tasksmangementservice.delete_all_tasks(
-                      email: authservice.user!.email);
-                  setState(() {});
-                }
-              },
-            ),
-          ),
-          Container(
-            width: screenwidth * 0.1,
-            child: IconButton(
-                onPressed: () async {
-                  await authservice.signout();
-                  Navigator.of(context)
-                      .pushNamedAndRemoveUntil("signinpage", (route) => false);
-                },
-                icon: const Icon(Icons.logout)),
-          ),
-        ],
         iconTheme: IconThemeData(color: Colors.black),
         elevation: 0,
         title: Row(
@@ -79,79 +53,377 @@ class _TodoListPageState extends State<TodoListPage> {
             ),
           ],
         ),
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        backgroundColor: Color.fromARGB(255, 214, 211, 211),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Container(
-                width: screenwidth * 0.9,
-                height: screenlength * 0.05,
-                decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: const BorderRadius.all(Radius.circular(20))),
-                child: TextField(
-                  onChanged: (query) {
-                    setState(() {
-                      filter.text = query;
-                      should_reload = true;
-                    });
-                  },
-                  style: const TextStyle(fontSize: 20),
-                  decoration: const InputDecoration(
-                    hintText: "Filter by title",
-                    focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.transparent)),
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                )),
-            SizedBox(
-              height: screenlength * 0.01,
-            ),
-            Divider(
-              thickness: 1,
-            ),
-            SizedBox(
-              height: screenlength * 0.005,
-            ),
             Container(
               height: screenlength * 0.77,
-              child: StreamBuilder(
-                  stream: (should_reload)
-                      ? tasksmangementservice.get_tasks(
-                          email: authservice.user!.email)
-                      : null,
-                  builder: (context, snapshot) {
-                    (should_reload)
-                        ? data = (snapshot.data
-                                ?.where((element) =>
-                                    element.title.contains(filter.text))
-                                .toList() ??
-                            [])
-                        : data;
+              width: screenwidth * 0.99,
+              child: ChangeNotifierProvider(
+                create: (context) =>
+                    days_provider(oldest: genereate_olddays(tasks: data)),
+                child: StreamBuilder(
+                    stream: (should_reload)
+                        ? tasksmangementservice.get_tasks(email: user!.email)
+                        : null,
+                    builder: (context, snapshot) {
+                      (should_reload)
+                          ? data = (snapshot.data
+                                  ?.where((element) =>
+                                      element.title.contains(filter.text))
+                                  .toList() ??
+                              [])
+                          : data;
 
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                            color: Color.fromARGB(255, 130, 190, 239)),
-                      );
-                    }
-                    if (snapshot.connectionState != ConnectionState.none) {
-                      if (snapshot.data?.isEmpty ?? true) {
+                      ScrollController scrollController = ScrollController();
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                              color: Color.fromARGB(255, 130, 190, 239)),
+                        );
+                      }
+                      if (snapshot.connectionState != ConnectionState.none) {
+                        if (snapshot.data?.isEmpty ?? true) {
+                          return Column(
+                            children: [
+                              Container(
+                                width: screenwidth * 0.99,
+                                height: screenlength * 0.15,
+                                child: ListView.builder(
+                                  controller: scrollController,
+                                  itemCount: Provider.of<days_provider>(context)
+                                          .days
+                                          ?.length ??
+                                      0,
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context0, index) {
+                                    return Container(
+                                      width: screenwidth * 0.2,
+                                      height: screenlength * 0.15,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          context
+                                              .read<days_provider>()
+                                              .select_day(index: index);
+                                        },
+                                        child: Card(
+                                          color: (Provider.of<days_provider>(
+                                                      context)
+                                                  .days!
+                                                  .elementAt(index)
+                                                  .is_selected)
+                                              ? Color.fromARGB(
+                                                  255, 186, 83, 223)
+                                              : null,
+                                          elevation: 9,
+                                          child: Column(
+                                            children: [
+                                              SizedBox(
+                                                height: screenlength * 0.01,
+                                              ),
+                                              Text(
+                                                "${Provider.of<days_provider>(context).days!.elementAt(index).date.day}",
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                "${Provider.of<days_provider>(context).days!.elementAt(index).date.month}",
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                "${Provider.of<days_provider>(context).days!.elementAt(index).date.year}",
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const Divider(
+                                thickness: 0.9,
+                              ),
+                              FloatingActionButton(
+                                onPressed: () {
+                                  Navigator.of(context).pushNamed(
+                                      "createorupdate",
+                                      arguments: selected_day);
+                                },
+                                child: const Icon(Icons.add),
+                              )
+                            ],
+                          );
+                        }
+                        return RefreshIndicator(
+                            onRefresh: () async {
+                              setState(() {
+                                should_reload = true;
+                              });
+                            },
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: screenwidth * 0.99,
+                                  height: screenlength * 0.15,
+                                  child: ListView.builder(
+                                    controller: scrollController,
+                                    itemCount:
+                                        Provider.of<days_provider>(context)
+                                                .days
+                                                ?.length ??
+                                            0,
+                                    scrollDirection: Axis.horizontal,
+                                    itemBuilder: (context0, index) {
+                                      return Container(
+                                        width: screenwidth * 0.2,
+                                        height: screenlength * 0.15,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            context
+                                                .read<days_provider>()
+                                                .select_day(index: index);
+                                            selected_day =
+                                                Provider.of<days_provider>(
+                                                        context,
+                                                        listen: false)
+                                                    .days!
+                                                    .elementAt(index)
+                                                    .date;
+                                          },
+                                          child: Card(
+                                            color: (Provider.of<days_provider>(
+                                                        context)
+                                                    .days!
+                                                    .elementAt(index)
+                                                    .is_selected)
+                                                ? Color.fromARGB(
+                                                    255, 186, 83, 223)
+                                                : null,
+                                            elevation: 9,
+                                            child: Column(
+                                              children: [
+                                                SizedBox(
+                                                  height: screenlength * 0.01,
+                                                ),
+                                                Text(
+                                                  "${Provider.of<days_provider>(context).days!.elementAt(index).date.day}",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  "${Provider.of<days_provider>(context).days!.elementAt(index).date.month}",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  "${Provider.of<days_provider>(context).days!.elementAt(index).date.year}",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: screenlength * 0.05,
+                                ),
+                                (data.isNotEmpty)
+                                    ? GFProgressBar(
+                                        percentage: tasksmangementservice
+                                            .completed_task(tasks: data),
+                                      )
+                                    : const SizedBox(),
+                                SizedBox(
+                                  height: screenlength * 0.01,
+                                ),
+                                FloatingActionButton(
+                                  backgroundColor: Colors.purple,
+                                  onPressed: () {
+                                    print("${selected_day.day}");
+                                    Navigator.of(context).pushNamed(
+                                        "createorupdate",
+                                        arguments: selected_day);
+                                  },
+                                  child: const Icon(
+                                    Icons.add,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: data.length,
+                                    itemBuilder: (context, index) {
+                                      Day dday =
+                                          Provider.of<days_provider>(context)
+                                              .days!
+                                              .firstWhere((element) =>
+                                                  element.is_selected);
+
+                                      if (data.elementAt(index).date.day ==
+                                              dday.date.day &&
+                                          data.elementAt(index).date.month ==
+                                              dday.date.month) {
+                                        return Container(
+                                          width: screenwidth * 0.95,
+                                          height: screenlength * 0.25,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          Createupdatetasks(
+                                                            title_text: data
+                                                                .elementAt(
+                                                                    index)
+                                                                .title,
+                                                            description_text:
+                                                                data
+                                                                    .elementAt(
+                                                                        index)
+                                                                    .description,
+                                                            date: data
+                                                                .elementAt(
+                                                                    index)
+                                                                .date,
+                                                          )));
+                                            },
+                                            child: Card(
+                                              shadowColor: Colors.blue,
+                                              elevation: 4,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Container(
+                                                    margin: EdgeInsetsDirectional
+                                                        .only(
+                                                            start: screenwidth *
+                                                                0.05),
+                                                    width: screenwidth * 0.6,
+                                                    child: Column(
+                                                      children: [
+                                                        const SizedBox(
+                                                          height: 5,
+                                                        ),
+                                                        Container(
+                                                          width:
+                                                              screenwidth * 0.6,
+                                                          child: Text(
+                                                            data
+                                                                .elementAt(
+                                                                    index)
+                                                                .title,
+                                                            style: const TextStyle(
+                                                                fontSize: 20,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                            softWrap: true,
+                                                          ),
+                                                        ),
+                                                        const Divider(
+                                                          thickness: 1,
+                                                        ),
+                                                        SizedBox(
+                                                          height: screenlength *
+                                                              0.05,
+                                                        ),
+                                                        Container(
+                                                          width:
+                                                              screenwidth * 0.6,
+                                                          child: Text(
+                                                            data
+                                                                .elementAt(
+                                                                    index)
+                                                                .description,
+                                                          ),
+                                                        ),
+                                                        SizedBox(
+                                                          height: screenlength *
+                                                              0.05,
+                                                        ),
+                                                        const Divider(
+                                                          thickness: 1,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: screenwidth * 0.3,
+                                                    child: Row(
+                                                      children: [
+                                                        Checkbox(
+                                                            onChanged:
+                                                                (onchanged) async {
+                                                              await tasksmangementservice.finish_unfinish_task(
+                                                                  email: user!
+                                                                      .email,
+                                                                  date: data
+                                                                      .elementAt(
+                                                                          index)
+                                                                      .date,
+                                                                  status:
+                                                                      onchanged!);
+                                                            },
+                                                            value: data[index]
+                                                                .completed),
+                                                        Text(
+                                                          (data
+                                                                  .elementAt(
+                                                                      index)
+                                                                  .completed)
+                                                              ? "done"
+                                                              : "doing",
+                                                          style: (data
+                                                                  .elementAt(
+                                                                      index)
+                                                                  .completed)
+                                                              ? const TextStyle(
+                                                                  color: Colors
+                                                                      .blue)
+                                                              : null,
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        return SizedBox();
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ));
+                      } else {
                         return Column(
                           children: [
                             FloatingActionButton(
                               onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Createupdatetasks()));
+                                setState(() {});
                               },
-                              child: const Icon(Icons.add),
+                              child: const Icon(Icons.refresh),
                             ),
                             SizedBox(
                               height: screenlength * 0.2,
@@ -165,241 +437,8 @@ class _TodoListPageState extends State<TodoListPage> {
                           ],
                         );
                       }
-                      return RefreshIndicator(
-                          onRefresh: () async {
-                            setState(() {
-                              should_reload = true;
-                            });
-                          },
-                          child: Column(
-                            children: [
-                              (data.isNotEmpty)
-                                  ? GFProgressBar(
-                                      percentage: tasksmangementservice
-                                          .completed_task(tasks: data),
-                                    )
-                                  : const SizedBox(),
-                              SizedBox(
-                                height: screenwidth * 0.05,
-                              ),
-                              Container(
-                                height: screenlength * 0.05,
-                                child: FloatingActionButton(
-                                  backgroundColor:
-                                      Color.fromARGB(255, 88, 197, 240),
-                                  onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                Createupdatetasks()));
-                                  },
-                                  child: const Icon(
-                                    Icons.add,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: data.length,
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      width: screenwidth * 0.95,
-                                      height: screenlength * 0.3,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Createupdatetasks(
-                                                        title_text: data
-                                                            .elementAt(index)
-                                                            .title,
-                                                        description_text: data
-                                                            .elementAt(index)
-                                                            .description,
-                                                        date: data
-                                                            .elementAt(index)
-                                                            .date,
-                                                      )));
-                                        },
-                                        child: Card(
-                                          shadowColor: Colors.blue,
-                                          elevation: 4,
-                                          child: SingleChildScrollView(
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Container(
-                                                  margin: EdgeInsetsDirectional
-                                                      .only(
-                                                          start: screenwidth *
-                                                              0.05),
-                                                  width: screenwidth * 0.6,
-                                                  child: Column(
-                                                    children: [
-                                                      const SizedBox(
-                                                        height: 5,
-                                                      ),
-                                                      Container(
-                                                        width:
-                                                            screenwidth * 0.6,
-                                                        child: Text(
-                                                          data
-                                                              .elementAt(index)
-                                                              .title,
-                                                          style: const TextStyle(
-                                                              fontSize: 20,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                          softWrap: true,
-                                                        ),
-                                                      ),
-                                                      const Divider(
-                                                        thickness: 1,
-                                                      ),
-                                                      SizedBox(
-                                                        height:
-                                                            screenlength * 0.05,
-                                                      ),
-                                                      Container(
-                                                        width:
-                                                            screenwidth * 0.6,
-                                                        child: Text(
-                                                          data
-                                                              .elementAt(index)
-                                                              .description,
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        height:
-                                                            screenlength * 0.05,
-                                                      ),
-                                                      const Divider(
-                                                        thickness: 1,
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          Container(
-                                                            width: screenwidth *
-                                                                0.2,
-                                                            child: Text(
-                                                              data
-                                                                  .elementAt(
-                                                                      index)
-                                                                  .date
-                                                                  .toString(),
-                                                            ),
-                                                          ),
-                                                          SizedBox(
-                                                            width: screenwidth *
-                                                                0.4,
-                                                          )
-                                                        ],
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                                Container(
-                                                  width: screenwidth * 0.21,
-                                                  child: Row(
-                                                    children: [
-                                                      Checkbox(
-                                                          onChanged:
-                                                              (onchanged) async {
-                                                            await tasksmangementservice
-                                                                .finish_unfinish_task(
-                                                                    email: authservice
-                                                                        .user!
-                                                                        .email,
-                                                                    date: data
-                                                                        .elementAt(
-                                                                            index)
-                                                                        .date,
-                                                                    status:
-                                                                        onchanged!);
-                                                          },
-                                                          value: data[index]
-                                                              .completed),
-                                                      SizedBox(
-                                                        width: screenwidth *
-                                                            0.0001,
-                                                      ),
-                                                      Text(
-                                                        (data
-                                                                .elementAt(
-                                                                    index)
-                                                                .completed)
-                                                            ? "done"
-                                                            : "doing",
-                                                        style: (data
-                                                                .elementAt(
-                                                                    index)
-                                                                .completed)
-                                                            ? const TextStyle(
-                                                                color:
-                                                                    Colors.blue)
-                                                            : null,
-                                                      )
-                                                    ],
-                                                  ),
-                                                ),
-                                                Container(
-                                                  width: screenwidth * 0.1,
-                                                  child: IconButton(
-                                                      onPressed: () async {
-                                                        await tasksmangementservice
-                                                            .delete_task(
-                                                                email:
-                                                                    authservice
-                                                                        .user!
-                                                                        .email,
-                                                                date: data
-                                                                    .elementAt(
-                                                                        index)
-                                                                    .date);
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.delete)),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ));
-                    } else {
-                      return Column(
-                        children: [
-                          FloatingActionButton(
-                            onPressed: () {
-                              setState(() {});
-                            },
-                            child: const Icon(Icons.refresh),
-                          ),
-                          SizedBox(
-                            height: screenlength * 0.2,
-                          ),
-                          Container(
-                            child: Text(
-                              "No Tasks",
-                              style: TextStyle(fontSize: 40),
-                            ),
-                          )
-                        ],
-                      );
-                    }
-                  }),
+                    }),
+              ),
             ),
           ],
         ),

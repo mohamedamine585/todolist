@@ -29,16 +29,21 @@ class Taskmangementservice {
   Future<void> add_task(
       {required String title,
       required String description,
-      required String email}) async {
+      required String email,
+      required DateTime date}) async {
     try {
-      await taskscollection.add({
+      print(date);
+      DocumentReference documentReference = await taskscollection.add({
         "user": email,
         "title": title,
         "completed": false,
         "description": description,
-        "date": DateTime.now()
+        "date": date,
       });
-    } catch (e) {}
+      print(documentReference.id);
+    } catch (e) {
+      print(e);
+    }
   }
 
   Stream<Iterable<Task>> get_tasks({required String email}) {

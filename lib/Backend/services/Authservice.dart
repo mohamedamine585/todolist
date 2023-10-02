@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypt/crypt.dart';
+import 'package:to_do_app/consts.dart';
 
 import '../modules/User.dart';
 import 'Sharedpref.dart';
@@ -9,8 +10,6 @@ class Authservice {
   Authservice._();
 
   factory Authservice() => _instance;
-
-  User? user;
 
   late final CollectionReference userscollection;
   Future<void> init() async {

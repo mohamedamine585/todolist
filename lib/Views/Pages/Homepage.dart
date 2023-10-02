@@ -6,6 +6,7 @@ import 'package:to_do_app/Backend/services/TasksMangement.dart';
 import 'package:to_do_app/Views/Pages/LoginPage.dart';
 import 'package:to_do_app/Views/Pages/TodoListPage.dart';
 import 'package:to_do_app/consts.dart';
+import 'package:to_do_app/consts.dart';
 import 'package:to_do_app/firebase_options.dart';
 
 class HomePage extends StatelessWidget {
@@ -17,7 +18,7 @@ class HomePage extends StatelessWidget {
     return FutureBuilder(
       future: all_init(context),
       builder: (context, snapshot) {
-        if (Authservice().user == null) {
+        if (user == null) {
           return const SigninPage();
         } else {
           return const TodoListPage();

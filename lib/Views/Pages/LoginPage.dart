@@ -153,7 +153,7 @@ class _SigninPageState extends State<SigninPage> {
                         } else {
                           await authservice.signin(
                               email: email.text, password: password.text);
-                          if (Authservice().user != null) {
+                          if (user != null) {
                             Navigator.of(context).pushNamedAndRemoveUntil(
                                 "todolistpage", (route) => false);
                           } else {
