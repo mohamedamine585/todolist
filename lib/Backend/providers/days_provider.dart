@@ -10,13 +10,16 @@ class days_provider with ChangeNotifier {
   }
 
   void select_day({required int index}) {
+    bool anyonetrue = false;
     for (int i = 0; i < days!.length; i++) {
       if (days![i].is_selected && index != i) {
+        anyonetrue = true;
         days![i].is_selected = false;
       }
     }
-    notifyListeners();
-    days![index].is_selected = !days![index].is_selected;
+    if (anyonetrue) {
+      days![index].is_selected = !days![index].is_selected;
+    }
 
     notifyListeners();
   }

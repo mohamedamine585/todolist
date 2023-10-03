@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 import '../modules/Task.dart';
 
@@ -30,7 +31,8 @@ class Taskmangementservice {
       {required String title,
       required String description,
       required String email,
-      required DateTime date}) async {
+      required DateTime date,
+      required TimeOfDay? deadline}) async {
     try {
       print(date);
       DocumentReference documentReference = await taskscollection.add({
@@ -61,6 +63,7 @@ class Taskmangementservice {
               }));
     } catch (e) {
       print(e);
+      print("object");
     }
     return const Stream.empty();
   }
@@ -114,7 +117,8 @@ class Taskmangementservice {
       {required String title,
       required String description,
       required String email,
-      required DateTime date}) async {
+      required DateTime date,
+      required TimeOfDay? deadline}) async {
     try {
       QuerySnapshot querydoc = await taskscollection
           .where("user", isEqualTo: email)

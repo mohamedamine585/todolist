@@ -35,6 +35,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
   Widget build(BuildContext context) {
     final taskmangementservice = Taskmangementservice();
     final authservice = Authservice();
+    var time;
     final title_txt = widget.title_text,
         description_text = widget.description_text,
         date = widget.date;
@@ -42,16 +43,15 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
       title.text = title_txt;
       description.text = description_text;
     }
-    DateTime dateTime = ModalRoute.of(context)!.settings.arguments as DateTime;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromARGB(255, 227, 239, 241),
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.black),
         elevation: 0,
         title: Row(
           children: [
-            const SizedBox(
-              width: 90,
+            SizedBox(
+              width: screenwidth * 0.1,
             ),
             Text(
               (title_txt == null && description_text == null)
@@ -64,7 +64,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
             ),
           ],
         ),
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        backgroundColor: Color.fromARGB(255, 227, 239, 241),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -81,8 +81,9 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                   Column(
                     children: [
                       Text(
-                        "title",
-                        style: TextStyle(fontSize: 18),
+                        "Title",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(
                         height: 5,
@@ -94,6 +95,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
               Container(
                 width: screenwidth * 0.86,
                 decoration: BoxDecoration(
+                    color: Colors.white,
                     border: Border.all(),
                     borderRadius: BorderRadius.all(Radius.circular(10))),
                 child: TextField(
@@ -116,10 +118,9 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                   const Column(
                     children: [
                       Text(
-                        "description",
+                        "Description",
                         style: TextStyle(
-                          fontSize: 18,
-                        ),
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(
                         height: 5,
@@ -130,6 +131,7 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
               ),
               Container(
                 decoration: BoxDecoration(
+                    color: Colors.white,
                     border: Border.all(),
                     borderRadius: BorderRadius.all(Radius.circular(10))),
                 width: screenwidth * 0.86,
@@ -141,6 +143,25 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
               ),
               SizedBox(
                 height: screenlength / 20,
+              ),
+              Container(
+                height: screenlength * 0.2,
+                child: FloatingActionButton(
+                    child: const Icon(Icons.timer),
+                    onPressed: () async {
+                      time = await showDialog(
+                        context: context,
+                        builder: (context) => Container(
+                          height: screenlength * 0.2,
+                          child: TimePickerDialog(
+                            initialTime: TimeOfDay.now(),
+                            onEntryModeChanged: (time) {
+                              Navigator.pop<TimePickerEntryMode>(context, time);
+                            },
+                          ),
+                        ),
+                      );
+                    }),
               ),
               Container(
                 width: screenwidth * 0.7,
@@ -167,13 +188,15 @@ class _CreateupdatetasksState extends State<Createupdatetasks> {
                                     title: title.text,
                                     description: description.text,
                                     email: user!.email,
-                                    date: date);
+                                    date: date,
+                                    deadline: time);
                               } else {
                                 await taskmangementservice.add_task(
+                                    deadline: time,
                                     title: title.text,
                                     description: description.text,
                                     email: user!.email,
-                                    date: dateTime);
+                                    date: date ?? DateTime.now());
                               }
 
                               Navigator.of(context).pop(true);
